@@ -1,0 +1,38 @@
+# Imagen base PHP con FPM
+FROM php:8.3-fpm
+
+# Instalar extensiones necesarias para Drupal
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libicu-dev \
+    libzip-dev \
+    libonig-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libcurl4-openssl-dev \
+    zlib1g-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        intl \
+        pdo \
+        pdo_mysql \
+        zip \
+        mbstring \
+        opcache \
+        gd \
+        xml \
+        xsl \
+        curl \
+    && docker-php-ext-enable opcache \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Instalar Composer desde imagen oficial
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+# Establecer el directorio de trabajo para Drupal
+WORKDIR /var/www/html

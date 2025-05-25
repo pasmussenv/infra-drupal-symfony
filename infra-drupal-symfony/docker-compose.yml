@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  # Servicio Nginx
+  nginx:
+    image: nginx:latest
+    container_name: proyecto_nginx
+    ports:
+      - "80:80"
+      # - "443:443"  #  Descomentar solo si ya tienes los certificados SSL instalados en ./nginx/certs
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/certs:/etc/nginx/certs
+      - ./drupal:/var/www/html
+      - ./symfony/public:/var/www/symfony/public  #  Se mantiene porque solo es acceso de Nginx a estáticos
+    depends_on:
+      - php-drupal
+      - php-symfony
+    networks:
+      - backend_network
+
+  # Servicio PHP para Drupal
+  php-drupal:
+    build:
+      context: .  # NUEVO Permite que el Dockerfile pueda acceder a más archivos del proyecto si hace falta
+      dockerfile: ./php/drupal/Dockerfile  # NUEVO  RUTA EXACTA
+    container_name: proyecto_php_drupal
+    volumes:
+      - ./drupal:/var/www/html
+      - drupal_data:/var/www/html/web/sites/default/files  # Volumen persistente para archivos subidos
+    command: >
+      bash -c "
+        composer install --no-interaction &&
+        chown -R www-data:www-data web/sites/default/files &&
+        chmod -R 755 web/sites/default/files &&
+        php-fpm
+      "
+    env_file:
+      - ./.env
+    depends_on:
+      - mysql
+    networks:
+      - backend_network
+
+  # Servicio PHP para Symfony
+  php-symfony:
+    build:
+      context: .  
+      dockerfile: ./php/symfony/Dockerfile  #  Ruta correcta desde raíz
+    container_name: proyecto_php_symfony
+    volumes:
+      - ./symfony:/var/www/html/symfony  
+      - symfony_var:/var/www/html/symfony/var  #  Volumen persistente para caché y logs
+    command: >
+      bash -c "
+        composer install --no-interaction &&
+        chown -R www-data:www-data var &&
+        chmod -R 755 var &&
+        php-fpm
+      "
+    depends_on:
+      - mysql
+    networks:
+      - backend_network
+
+  # Servicio MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: proyecto_mysql
+    env_file:
+      - ./.env
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    ports:
+      - "3306:3306"
+    networks:
+      - backend_network
+
+networks:
+  backend_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
+  drupal_data:
+    driver: local
+  symfony_var:
+    driver: local
