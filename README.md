@@ -53,8 +53,7 @@ proyecto-drupal-symfony/
 ### 1. Clonar el repositorio
 
 ```bash
-git clone git@github.com:CodeArts-Solutions/Ducks-Infraestructura.git
-cd Ducks-Infraestructura
+git clone git@github.com:pasmussenv/infra-drupal-symfony.git
 ```
 
 ### 2. Crear archivos `.env` con las variables de entorno
