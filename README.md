@@ -261,32 +261,8 @@ En `nginx/default.conf` hay un bloque preparado para certificados SSL. Para acti
 docker-compose -f docker-compose.prod.yml build --no-cache && \
 docker-compose -f docker-compose.prod.yml up -d
 ```
-## 📝 Gitignore
-
-Este proyecto incluye reglas para ignorar carpetas generadas automáticamente:
-
-- drupal/vendor/
-- drupal/web/sites/default/files/
-- symfony/vendor/
-- symfony/var/
-- .env, .env.local, .env.prod (excepto los .env.example)
 
 ---
 
-## 👥 Equipo de trabajo
-
-### 💡 Equipo: Ducks
-
-Un equipo formado por estudiantes de ASIR que han trabajado colaborativamente para diseñar, desplegar y documentar esta infraestructura DevOps profesional.
-
-**Integrantes:**
-
-- Lucía
-- Paula
-- Torres
-- Domingo
-- Francisco Javier
-- José Alejandro
-- Antonio
-- Héctor
-- Álvaro
+Proyecto desarrollado por 🫆GAIA
+En prácticas CodeArts Solutions
