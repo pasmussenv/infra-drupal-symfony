@@ -1,6 +1,6 @@
-#  Ducks - Infraestructura DevOps Symfony + Drupal
+#  Infraestructura DevOps Symfony + Drupal
 
-Proyecto colaborativo que integra Symfony 7, Drupal 11, MySQL 8 y Nginx 1.25, todo orquestado con Docker Compose.
+Proyecto que integra Symfony 7, Drupal 11, MySQL 8 y Nginx 1.25, todo orquestado con Docker Compose.
 
 ---
 
