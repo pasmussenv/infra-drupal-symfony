@@ -231,7 +231,7 @@ En `nginx/default.conf` hay un bloque preparado para certificados SSL. Para acti
 ```
 
 ---
-##🛠 Cómo levantar el proyecto en producción
+## 🛠 Cómo levantar el proyecto en producción
 
 
 1. **Crear los archivos de entorno**  
@@ -264,5 +264,4 @@ docker-compose -f docker-compose.prod.yml up -d
 
 ---
 
-Proyecto desarrollado por 🫆GAIA
-En prácticas CodeArts Solutions
+Proyecto desarrollado por 🫆GAIA en prácticas CodeArts Solutions
