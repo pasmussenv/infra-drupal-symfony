@@ -1,0 +1,59 @@
+services:
+  nginx:
+    image: nginx:1.25.2
+    container_name: proyecto_nginx_prod
+    ports:
+      - "80:80"
+      # - "443:443"
+    volumes:
+      - ./nginx/default.prod.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/certs:/etc/nginx/certs
+      - ./drupal:/var/www/html  
+    depends_on:
+      - php-drupal
+      - php-symfony
+    restart: always
+    networks:
+      - backend_network
+
+  php-drupal:
+    build:
+      context: .
+      dockerfile: ./php/drupal/Dockerfile.prod
+    container_name: proyecto_php_drupal_prod
+    env_file:
+      - ./.env.prod
+    restart: always
+    networks:
+      - backend_network
+
+  php-symfony:
+    build:
+      context: .
+      dockerfile: ./php/symfony/Dockerfile.prod
+    container_name: proyecto_php_symfony_prod
+    env_file:
+      - ./symfony/.env.prod
+    restart: always
+    networks:
+      - backend_network
+
+  mysql:
+    image: mysql:8.0
+    container_name: proyecto_mysql_prod
+    env_file:
+      - ./.env.prod
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql-init:/docker-entrypoint-initdb.d
+    restart: always
+    networks:
+      - backend_network
+
+networks:
+  backend_network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local

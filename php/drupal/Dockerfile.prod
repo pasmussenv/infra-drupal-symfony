@@ -1,0 +1,49 @@
+FROM php:8.3-fpm
+
+# Instalar extensiones necesarias para Drupal
+RUN apt-get update && apt-get install -y \
+    git \
+    unzip \
+    libicu-dev \
+    libzip-dev \
+    libonig-dev \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    libxml2-dev \
+    libxslt1-dev \
+    libcurl4-openssl-dev \
+    zlib1g-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        intl \
+        pdo \
+        pdo_mysql \
+        zip \
+        mbstring \
+        opcache \
+        gd \
+        xml \
+        xsl \
+        curl \
+    && docker-php-ext-enable opcache \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY php/drupal/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html
+COPY ./drupal/ ./
+
+# Instalar dependencias de producción
+RUN composer install --no-dev --optimize-autoloader
+
+# Crear carpeta de archivos subidos y copiar settings y services
+RUN mkdir -p web/sites/default/files \
+    && cp web/sites/default/default.settings.php web/sites/default/settings.php \
+    && cp web/sites/default/default.services.yml web/sites/default/services.yml \
+    && chown -R www-data:www-data web vendor \
+    && chmod -R 755 web vendor \
+    && chmod 644 web/sites/default/settings.php web/sites/default/services.yml
+
+USER www-data

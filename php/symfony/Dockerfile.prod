@@ -1,0 +1,33 @@
+# Etapa 1: Construcción con Composer
+FROM composer:2 as build
+
+WORKDIR /app
+
+COPY ./symfony/composer.json ./symfony/composer.lock ./
+RUN composer install --no-dev --optimize-autoloader --no-scripts
+
+COPY ./symfony/ ./
+
+# Etapa 2: Imagen final de producción
+FROM php:8.3-fpm
+
+RUN apt-get update && apt-get install -y \
+    libicu-dev libzip-dev libonig-dev \
+    libpng-dev libjpeg-dev libfreetype6-dev \
+    zlib1g-dev libxml2-dev \
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install -j$(nproc) \
+        intl pdo pdo_mysql zip mbstring opcache gd xml \
+    && docker-php-ext-enable opcache \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY php/symfony/opcache.ini /usr/local/etc/php/conf.d/opcache.ini
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+
+WORKDIR /var/www/html/symfony
+COPY --from=build /app ./
+
+RUN chown -R www-data:www-data var vendor \
+    && chmod -R 755 var vendor
+
+USER www-data

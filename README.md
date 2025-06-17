@@ -4,39 +4,51 @@ Proyecto colaborativo que integra Symfony 7, Drupal 11, MySQL 8 y Nginx 1.25, to
 
 ---
 
+
 ## 📁 Estructura del Proyecto
 
 ```plaintext
 proyecto-drupal-symfony/
-├── backend/                   # Symfony 7
-├── drupal/                    # Drupal 11
-│   ├── composer.json          # Composer para Drupal
-│   ├── .env.example           # Variables para Drupal
-│   └── web/                   # Carpeta pública de Drupal
+├── drupal/                      # Drupal 11
+│   ├── composer.json            # Composer para Drupal
+│   ├── .env.example             # Variables de entorno de desarrollo
+│   ├── .env.prod                # Variables de entorno de producción
+│   └── web/                     # Carpeta pública de Drupal
 │       └── sites/default/
 │           ├── settings.php
 │           ├── services.yml
-│           └── files/         # Carpeta para archivos subidos
-├── symfony/                   # Symfony 7 (estructura habitual)
-│   ├── .env.example
-│   └── src/                   # Controladores, servicios, etc.
+│           └── files/           # Carpeta para archivos subidos
+├── symfony/                     # Symfony 7 (estructura habitual)
+│   ├── .env                     # Variables de entorno de desarrollo
+│   ├── .env.prod                # Variables de entorno de producción
+│   └── src/
 │       └── Controller/
 │           └── DefaultController.php
 ├── php/
-│   ├── symfony/Dockerfile     # Dockerfile para Symfony
-│   └── drupal/Dockerfile      # Dockerfile para Drupal
-├── mysql-init/init-database.sql
+│   ├── drupal/
+│   │   ├── Dockerfile           # Dockerfile para desarrollo
+│   │   ├── Dockerfile.prod      # Dockerfile para producción
+│   │   └── opcache.ini          # Configuración de OPCache
+│   └── symfony/
+│       ├── Dockerfile           # Dockerfile para desarrollo
+│       ├── Dockerfile.prod      # Dockerfile para producción
+│       └── opcache.ini          # Configuración de OPCache
+├── mysql-init/
+│   └── init-database.sql        # Script de inicialización de MySQL
 ├── nginx/
-│   ├── default.conf           # Configuración de Nginx
-│   └── certs/                 # Certificados SSL (vacía por defecto)
-├── .env.example               # Variables generales
+│   ├── default.conf             # Configuración de Nginx para dev
+│   ├── default.prod.conf        # Configuración de Nginx para prod
+│   └── certs/                   # Certificados SSL (vacía por defecto)
+├── .env.example                 # Ejemplo variables de entorno
+├── .env.prod                    # Variables de entorno generales (prod)
+├── .env                         # Variables de entorno generales (dev)
 ├── .gitignore
-└── docker-compose.yml
+├── docker-compose.yml           # Composición de servicios (dev)
+└── docker-compose.prod.yml      # Composición de servicios (prod)
 ```
-
 ---
 
-## 🚀 Cómo levantar el proyecto
+## 🚀 Cómo levantar el proyecto en desarrollo
 
 ### 1. Clonar el repositorio
 
@@ -159,11 +171,21 @@ docker compose up -d
 
 Durante la instalación web de Drupal se te pedirá:
 
+**1. Configuración de la base de datos**
+
+Los mismos datos que aparecen en el .env de la raíz del proyecto
+
+- DB_HOST=mysql
+- DB_NAME=drupal_db
+- DB_USER=ducks
+- DB_PASSWORD=ducks
+
+**2.Configuración para el sitio**
+
 - Nombre del sitio: Web Cliente  
 - Correo del sitio: cliente@ejemplo.com  
 - Nombre de usuario: admin_cliente  
 - Contraseña: admin1234  
-- Correo del administrador: cliente@ejemplo.com
 
 ### Archivos importantes:
 
@@ -209,7 +231,36 @@ En `nginx/default.conf` hay un bloque preparado para certificados SSL. Para acti
 ```
 
 ---
+##🛠 Cómo levantar el proyecto en producción
 
+
+1. **Crear los archivos de entorno**  
+   - Crea un archivo `.env.prod` en la raíz del proyecto y añade dentro todo el contenido de las variables para MySQL y para Drupal.
+
+   
+   - Luego, crea dentro de la carpeta symfony el archivo `.env.prod`  y dentro añade el contenido real para las variables de ejemplo: 
+    
+     ```env
+     # Symfony
+     APP_ENV=prod
+     APP_DEBUG=0
+     APP_SECRET=123456789abcdefgh
+     DATABASE_URL="mysql://ducks:ducks@mysql:3306/symfony_db"
+     ```
+     
+2. **Configurar SSL**  
+   - Crea y añade tus certificados en `nginx/certs/` (por ejemplo `cert.pem` y `key.pem`).  
+
+   - Abre `nginx/default.prod.conf` y descomenta o ajusta las líneas de SSL para que apunten a esos archivos.  
+   
+   - Abre `docker-compose.prod.yml` y descomenta o ajusta el servicio de Nginx para habilitar el montaje de `nginx/certs/` y los puertos 443.
+
+3. **Construir y levantar las imágenes Docker de producción**  
+ 
+  ```bash
+docker-compose -f docker-compose.prod.yml build --no-cache && \
+docker-compose -f docker-compose.prod.yml up -d
+```
 ## 📝 Gitignore
 
 Este proyecto incluye reglas para ignorar carpetas generadas automáticamente:
